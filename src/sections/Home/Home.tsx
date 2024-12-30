@@ -1,246 +1,463 @@
-import { ContextPOC } from "./components/ContextPOC/ContextPOC";
-import { StatePOC } from "./components/StatePOC/StatePOC";
-
 import styles from "./Home.module.scss";
-import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
-import { StateWithMemoPOC } from "./components/StateWithMemoPOC/StateWithMemoPOC";
 import {
-  contextPOC,
-  contextPOCProvider,
-  contextPOCSwitcher,
-  contextPOCTitle,
-  statePOC,
-  statePOCTitleWithMemo,
-  zustandPOC,
-  zustandPOCStore,
-  zustandPOCSwitcher,
-  zustandPOCTitle,
+  stateWithMemoizedTitle,
+  stateWithMemoizedTitleTitle,
+  stateWithObject,
+  stateWithObjectWithMemo,
+  stateWithoutMemo,
+  stateWithTwoSwitchers,
+  stateWithTwoSwitchersWithMemo,
 } from "./constants";
-import { ZustandPOC } from "./components/ZustandPOC/ZustandPOC";
 import React from "react";
-import { StressGroup } from "./components/_StressTest/StressGroup";
 import { Header } from "@/components/Header/Header";
 import { Footer } from "@/components/Footer/Footer";
+import { StateWithoutMemo } from "./components/StateWithoutMemo/StateWithoutMemo";
+import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
+import { StateWithMemoizedTitle } from "./components/StateWithMemoizedTitle/StateWithMemoizedTitle";
+import { StateWithTwoSwitchers } from "./components/StateWithTwoSwitchers/StateWithTwoSwitchers";
+import { StateWithTwoSwitchersWithMemo } from "./components/StateWithTwoSwitchersWithMemo/StateWithTwoSwitchersWithMemo";
+import { StateWithObject } from "./components/StateWithObject/StateWithObject";
+import { StateWithObjectWithMemo } from "./components/StateWithObjectWithMemo/StateWithObjectWithMemo";
 
 export const Home = () => {
   return (
     <div className={styles.wrapper}>
       <Header />
       <h1>
-        Gerenciamento de estado no <code>React.js</code>
+        Performance com <code>React.memo</code> & <code>useMemo</code> &{" "}
+        <code>useCallback</code>
       </h1>
       <p>
-        Primeiramente, vamos pensar em um cenário simples onde temos que
-        gerenciar um estado que será compartilhado entre dois componentes.
-        <br />
-        Então teremos um componente pai, que irá renderizar dois componentes
-        filhos, e esses componentes filhos precisam compartilhar o mesmo estado.
-        <br />
-        Um deles vai receber apenas um texto (que poderia vir de uma API) e o
-        outro vai ser um <code>Switcher</code> que vai servir apenas pra
-        conseguir simular essa mudança de estado.
+        Primeiramente, a gente tem que entender como que funciona o processo de
+        re-renderização do React, e aí sim entender quando e como que a
+        memorização pode ser útil.
+      </p>
+      <p>
+        Basicamente, podemos dizer que toda re-renderização do React.js é
+        causada por conta de um estado que foi alterado.
+      </p>
+      <p>
+        Mas isso não significa que apenas o estado do componente é responsável
+        por uma re-renderização. Calma! Vamos entender isso com calma.
       </p>
 
-      <h2>
-        Usando <code>useState</code>;
-      </h2>
       <p>
-        Acredito que a primeira coisa que vem à mente é usar o{" "}
-        <code>useState</code> para gerenciar o estado no componente pai e passar
-        os valores e funções para os componentes filhos, que é a abordagem mais
-        comum de gerenciamento de estados.
-        <br />
-        Algo mais ou menos assim:
-      </p>
-      <CodeBlock code={statePOC} />
-      <StatePOC />
-      <p>
-        Se notar nessa abordagem, cada vez que o state do{" "}
-        <code>switcherValue</code> muda, todos os componentes são
-        re-renderizados novamente, até mesmo o <code>Title</code> que não tem
-        nada a ver com isso!
+        A mudança de estado é o inicio de tudo, mas muita coisa acontece por
+        conta disso e a gente tem que entender como que o React.js funciona por
+        baixo dos panos.
       </p>
       <p>
-        Isso acontece por que toda vez que um estado muda, o componente que o
-        contém é re-renderizado, e como o <code>App</code> é o componente pai de
-        todos os outros, todos eles são re-renderizados juntos.
+        Vamos focar em dois principais gatilhos que fazem um componente ser
+        re-renderizado;
       </p>
+      <h3>Quando uma propriedade do componente muda;</h3>
       <p>
-        Existe uma forma de otimizar isso utilizando o <code>React.memo</code>,
-        que basicamente faz com que um componente só seja re-renderizado se
-        alguma propriedade que ele recebe for alterada.
-        <br />
-        Algo mais ou menos assim:
+        Se um estado que ta sendo passado por propriedade pra um componente é
+        alterado, logo, esse componente precisa ser re-renderizado também, por
+        conta disso sempre que uma propriedade de um componente muda, ele é
+        re-renderizado.
       </p>
-      <CodeBlock code={statePOCTitleWithMemo} />
+      <h3>Quando o componente pai é re-renderizado;</h3>
       <p>
-        Com essa simples abordagem, ele já resolve o problema de re-renderizar o{" "}
-        <code>Title</code> toda vez que o <code>switcherValue</code> muda.
-      </p>
-      <StateWithMemoPOC />
-      <p>
-        Porém note que o <code>App</code> continua re-renderizando toda vez que
-        o <code>switcherValue</code> muda... Isso é um problema? não
-        necessariamente, por que nesse caso o unico componente que vai ter
-        impacto de fato é o <code>Container</code>, que é o esperado. O{" "}
-        <code>App</code> é re-renderizado, mas ele só vai causar o re-render do{" "}
-        <code>Container</code> que realmente deve ser re-renderizado, já que seu
-        estado mudou, enquanto o <code>Title</code> vai continuar lá intacto por
-        conta do <code>React.memo</code>.
+        Quando um componente é re-renderizado, tudo nele é “recriado“ novamente,
+        e isso inclui tudo que está no <code>return</code> também, então se um
+        componente pai é re-renderizado, todos os seus filhos também são
+        re-renderizados.
       </p>
 
-      <h2>
-        Usando <code>createContext</code>;
-      </h2>
+      <h3>Na prática</h3>
       <p>
-        Um problema que temos quando começamos a usar a abordagem de{" "}
-        <code>useState</code> é que a medida que a aplicação cresce, a
-        quantidade de props que precisamos passar para os componentes filhos
-        também cresce, e isso pode se tornar um problema a longo prazo.
+        É um pouco confuso no começo, mas na prática é um pouco mais fácil de
+        entender o que está acontecendo por trás dos panos.
+      </p>
+
+      <p>Então vamos iniciar pensando em um componente assim:</p>
+      <CodeBlock code={stateWithoutMemo} />
+      <StateWithoutMemo />
+
+      <p>
+        Nesse exemplo a gente consegue perceber o básico do react funcionando.
       </p>
       <p>
-        E então é que surge a brilhante ideia de resolver isso utilizando um{" "}
-        <code>Context</code> do React, que basicamente é um objeto que vai ser
-        compartilhado entre todos os componentes que estão dentro dele.
+        O componente <code>App</code> está sendo renderizado toda vez que o{" "}
+        <code>switcherValue</code> é alterado.
       </p>
       <p>
-        Mas ao mesmo tempo que o código fica muito mais “limpo“ e organizado,
-        ele também é muito perigoso e pode ser um inimigo pra performance da sua
-        aplicação.
+        O componente <code>SwitcherContainer</code> está sendo renderizado toda
+        vez que o estado <code>switcherValue</code> é alterado, por que o{" "}
+        <code>switcherValue</code> está sendo passado como propriedade pra ele,
+        logo ele realmente precisa ser re-renderizado!
       </p>
       <p>
-        Vamos pegar e passar toda essa lógica do state e colocar dentro de um{" "}
-        <code>Context</code> então pra ver como ele se comporta.
+        E a gente consegue perceber também, que o <code>Title</code> também foi
+        re-renderizado, apenas por ser um componente filho de um componente que
+        está sendo re-renderizado.
       </p>
-      <CodeBlock code={contextPOCProvider} />
-      <CodeBlock code={contextPOC} />
+      <h3>Primeiro caso de memorização;</h3>
       <p>
-        Então, como podemos ver, o código realmente fica visualmente mais limpo,
-        por que não precisamos mais passar as props para os componentes filhos.
+        Nesse momento já conseguimos pensar no nosso primeiro caso de
+        memorização.
         <br />
-        Dentro de cada componente filho a gente simplesmente chamaria o contexto
-        e pegaria o estado que a gente precisa.
-      </p>
-      <CodeBlock code={contextPOCTitle} />
-      <CodeBlock code={contextPOCSwitcher} />
-      <p>
-        Muito mais organizado, mas vamos ver na prática como isso se comporta?
-      </p>
-      <ContextPOC />
-      <p>
-        Note que o <code>App</code> realmente parou de re-renderizar, ok! Mas o{" "}
-        <code>Title</code> está re-renderizando toda vez que o{" "}
-        <code>switcherValue</code> muda, e isso é um problema.
+        Afinal, não tem a menor necessidade do componente <code>
+          Title
+        </code>{" "}
+        renderizar junto, sendo que ele é basicamente um “componente estático“,
+        nenhuma propriedade dele foi alterada.
       </p>
       <p>
-        Isso acontece por que o <code>React</code> não consegue identificar qual
-        estado do contexto aquele componente depende, então ele re-renderiza
-        toda vez que o estado do contexto muda. E não há <code>React.memo</code>{" "}
-        que resolva, por que nesse caso não tem nenhuma propriedade que muda, o
-        que muda é o estado do contexto.
+        É aí que entra a primeira mágica, o <code>React.memo</code>, que
+        basicamente faz com que um componente só seja re-renderizado se alguma
+        propriedade que ele recebe for alterada. Mesmo que o componente pai seja
+        re-renderizado.
       </p>
-      <p>Como resolver isso então? Bom, a resposta é: Depende...</p>
+      <p>Logo, isso resolveria nosso problema:</p>
+      <CodeBlock code={stateWithMemoizedTitleTitle} />
       <p>
-        Em alguns casos a gente pode dividir o contexto em vários contextos
-        menores, e assim a gente consegue controlar melhor o que cada componente
-        depende. Mas essa abordagem não é muito escalável, por que se o estado é
-        muito complexo, acaba que é necessário criar diversos contextos e acaba
-        deixando o código muito complexo e confuso.
+        E o componente <code>App</code> continuaria igual
+      </p>
+      <CodeBlock code={stateWithMemoizedTitle} />
+      <StateWithMemoizedTitle />
+      <p>
+        Agora, o <code>Title</code> não é re-renderizado mais, por que nenhuma
+        propriedade nem estado dele estão sendo alterados.
+      </p>
+      <p>
+        O <code>SwitcherContainer</code> continua re-renderizando por que ele
+        realmente depende do estado, não é um re-render desnecessário.
+      </p>
+
+      <h3>Fácil demais;</h3>
+      <p>
+        Até então ta muito fácil, na vida real nem sempre é assim tão simples,
+        vamos complicar um pouco mais agora. E se nesse componente, a gente
+        conseguisse alterar o estado a partir de dois lugares diferentes...
+      </p>
+
+      <CodeBlock code={stateWithTwoSwitchers} />
+      <StateWithTwoSwitchers />
+
+      <p>
+        Bom... O mesmo problema que tivemos com o <code>Title</code> certo? Um{" "}
+        <code>SwitcherContainer</code> está sendo re-renderizado quando eu
+        altero o valor do outro. Só adicionar um <code>React.memo</code> que vai
+        ser resolvido.
+      </p>
+      <p>
+        E se eu te falasse que o <code>SwitcherContainer</code> já está usando o{" "}
+        <code>React.memo</code>?
+      </p>
+      <p>
+        Então o que está acontecendo? Nesse caso, o problema é um pouco
+        diferente...
+      </p>
+      <p>
+        Note que uma das propriedades que está sendo passada pro{" "}
+        <code>SwitcherContainer</code> é uma função (<code>onToggle</code>).
+      </p>
+      <p>
+        Quando comparamos duas funções javascript, elas são consideradas iguais
+        apenas se elas tiverem a mesma referência.
         <br />
-        Então geralmente o <code>Context</code> é mais recomendado para estados
-        que são mais simples ou para estados que não são alterados
-        frequentemente como um tema(light/dark) por exemplo.
+        Ou seja, mesmo se o conteúdo das funções forem exatamente IGUAL, se ela
+        tiver sido “recriada“, o javascript vai considerar que são funções
+        diferentes.
       </p>
-      <h2>
-        Usando <code>Zustand</code>;
-      </h2>
+      <p>Exemplo:</p>
+      <CodeBlock
+        code={`
+const function1 = () => console.log("Hello World");
+const function2 = () => console.log("Hello World");
+
+console.log(function1 === function2); // false
+
+const function3 = function1;
+
+console.log(function1 === function3); // true
+      `}
+      />
+      <p>Então o que está acontecendo é:</p>
+      <ul>
+        <li>
+          1. Componente <code>App</code> é re-renderizado;
+        </li>
+        <li>
+          2. Funções de <code>onToggle</code> são recriadas;
+        </li>
+        <li>3. As referências delas são alteradas;</li>
+        <li>
+          4. O React identifica que as propriedades dos componentes{" "}
+          <code>SwitcherContainer</code> foram alteradas;
+        </li>
+        <li>
+          5. Re-renderiza os componentes <code>SwitcherContainer</code>;
+        </li>
+      </ul>
+
       <p>
-        Se usar <code>useState</code>, fica muito verboso, se usar{" "}
-        <code>createContext</code>, não fica performático, o que usar então?
+        Como resolver isso? Aí que entra o segundo feitiço, o{" "}
+        <code>useCallback</code>
       </p>
       <p>
-        Nesses casos, a gente pode optar por usar um gerenciador de estados mais
-        robusto, como por exemplo um Redux, Zustand, etc...{" "}
+        O <code>useCallback</code> basicamente memoriza a função e faz com que
+        ela não seja re-criada toda vez que o componente é re-renderizado,
+        preservando a referência da função e assim evitando re-render
+        desnecessário por conta do React achar que alguma propriedade mudou.
+      </p>
+
+      <p>
+        É como se em cada re-render, o React invés de “recriar“ a função, ele
+        reutilizasse a mesma que ele guardou na memória (caso nenhuma
+        dependencia tenha sido alterada)
+      </p>
+
+      <CodeBlock code={stateWithTwoSwitchersWithMemo} />
+      <StateWithTwoSwitchersWithMemo />
+
+      <p>
+        Agora sim! Agora o React consegue identificar exatamente quando a função
+        é alterada de fato e a gente consegue evitar o re-render desnecessário!
       </p>
       <p>
-        A diferença entre esses gerenciadores de estados robustos e o{" "}
-        <code>Context</code> é que a gente consegue observar apenas um pedaço do
-        estado invés de sempre observar o estado inteiro.
+        <strong>
+          OBS: É obrigatório o uso do <code>React.memo</code>, caso contrário,
+          nessa situação, o <code>useCallback</code> não terá efeito nenhum, sem
+          o <code>React.memo</code> cairá na mesma situação do primeiro cenário,
+          o <code>SwitcherContainer</code> vai re-renderizar apenas por que o
+          componente pai re-renderizou...
+        </strong>
       </p>
-      <p>Nesse exemplo vou usar o Zustand pela facilidade da implementação:</p>
-      <CodeBlock code={zustandPOCStore} />
-      <CodeBlock code={zustandPOC} />
+      <h3>Complicando um pouco mais...</h3>
       <p>
-        Note que até mesmo nosso arquivo principal fica mais limpo e organizado,
-        por que ele não precisa saber sobre os estados dos componentes filhos.
-      </p>
-      <CodeBlock code={zustandPOCTitle} />
-      <CodeBlock code={zustandPOCSwitcher} />
-      <p>
-        Dessa forma, o componente <code>Title</code> vai re-renderizar apenas se
-        o estado <code>title</code> for alterado, por que agora ele não está
-        mais observando o restante dos estados
+        Ok, agora que entedemos como o <code>useCallback</code> funciona, vamos
+        complicar um pouco mais o nosso componente...
       </p>
       <p>
-        O mesmo vale pro <code>Container</code>, se por alguma razão o estado{" "}
-        <code>title</code> fosse alterado, isso não o afetaria em nada.
+        Na vida real, trabalhamos com dados vindo de diversos lugares e é muito
+        comum utilizar estruturas como Array e Objetos pra transportar esses
+        dados
       </p>
-      <p>Mas vamos ver na prática como isso fica:</p>
-      <ZustandPOC />
       <p>
-        Usando um gerenciador mais robusto, a gente até consegue evitar o uso do{" "}
-        <code>React.memo</code> por que não é mais necessário já que o
-        componente pai não está mais sendo re-renderizado desnecessariamente
-        (como acontece usando o <code>useState</code>)
+        E se o nosso componente passasse um objeto ou um array como propriedade
+        pra algum filho?
       </p>
+
+      <CodeBlock code={stateWithObject} />
+      <StateWithObject />
+
+      <p>
+        Bom, o mesmo problema que tivemos com as funções, acontece com os
+        objetos/arrays também...
+        <br />
+        Com o javascript é a mesma coisa, se você criar um objeto novo, ele vai
+        ter uma referência diferente do objeto anterior, mesmo que o conteúdo
+        seja o mesmo.
+      </p>
+      <p>Exemplo:</p>
+      <CodeBlock
+        code={`
+const object1 = { name: "John", age: 25 };
+const object2 = { name: "John", age: 25 };
+
+console.log(object1 === object2); // false
+
+const object3 = object1;
+
+console.log(object1 === object3); // true
+        `}
+      />
+
+      <p>Então o que está acontecendo é:</p>
+      <ul>
+        <li>
+          1. Componente <code>App</code> é re-renderizado;
+        </li>
+        <li>
+          2. O objeto <code>user</code> é recriado;
+        </li>
+        <li>3. A referência dele é alterada;</li>
+        <li>
+          4. O React identifica que as propriedades do componente{" "}
+          <code>User</code> foram alteradas;
+        </li>
+        <li>
+          5. Re-renderiza o componente <code>User</code>;
+        </li>
+      </ul>
+
+      <p>
+        Mas dessa vez não podemos usar o <code>useCallback</code> pra resolver
+        isso, por sorte temos um cara tão bom quanto chamado{" "}
+        <code>useMemo</code> que faz exatamente a mesma coisa, mas para dados
+        estáticos como objetos e arrays. (Ou qualquer coisa que não seja uma
+        função)
+      </p>
+
+      <CodeBlock code={stateWithObjectWithMemo} />
+      <StateWithObjectWithMemo />
+
+      <p>
+        Agora sim! O <code>User</code> não é re-renderizado mais
+      </p>
+      <p>Agora o que está acontecendo é:</p>
+      <ul>
+        <li>
+          1. Componente <code>App</code> é re-renderizado;
+        </li>
+        <li>
+          2. O objeto <code>user</code> não é recriado, por conta do{" "}
+          <code>useMemo</code>;
+        </li>
+        <li>3. A referência dele continua a mesma;</li>
+        <li>
+          4. O React identifica que as propriedades do componente{" "}
+          <code>User</code> não foram alteradas;
+        </li>
+        <li>
+          5. O componente <code>User</code> não é re-renderizado novamente;
+        </li>
+      </ul>
+      <p>
+        <strong>
+          OBS: Mesma coisa do <code>useCallback</code>. É obrigatório o uso do{" "}
+          <code>React.memo</code>, caso contrário, nessa situação, não terá
+          efeito nenhum, sem o <code>React.memo</code> cairá na mesma situação
+          do primeiro cenário lá em cima, o <code>User</code> vai acabar sendo
+          re-renderizado apenas por que o componente pai re-renderizou...
+        </strong>
+      </p>
+
+      <h3>
+        Mas não é só pra isso que serve o <code>useMemo</code> e o{" "}
+        <code>useCallback</code>
+      </h3>
+
+      <p>
+        Terão vezes que a gente vai precisar usar o <code>useMemo</code> e o{" "}
+        <code>useCallback</code> pra resolver outras coisas que não sejam apenas
+        evitar re-renderizações desnecessárias.
+      </p>
+      <p>
+        Os exemplos que eu dei eram todos focados em evitar re-renderizações em
+        conjunto com o <code>React.memo</code>, mas eles tem outras utilidades
+        também.
+      </p>
+      <p>
+        Por exemplo, o <code>useMemo</code> pode ser usado pra fazer cálculos
+        pesados e evitar que eles sejam refeitos toda vez que o componente é
+        re-renderizado.
+      </p>
+      <CodeBlock
+        code={`
+const sum = useMemo(() => {
+  let result = 0;
+  for (let i = 0; i < 1000000000; i++) {
+    result += i;
+  }
+  return result;
+}, [])
+      `}
+      />
+
+      <p>
+        Imagina toda hora que um componente re-renderizar (agora que você sabe
+        como funciona) ele ter que re-fazer esse cálculo de novo... Não é muito
+        legal né?
+      </p>
+      <p>
+        O <code>useCallback</code> e <code>useMemo</code> também pode ser usado
+        pra evitar disparar um <code>useEffect</code> desnecessariamente, por
+        exemplo.
+      </p>
+      <CodeBlock
+        code={`
+const handleFunction = useCallback(() => {
+  console.log("Hello World");
+}, []);
+
+useEffect(() => {
+  handleFunction();
+}, [handleFunction]);
+        `}
+      />
+      <p>
+        Sem o <code>useCallback</code> nesse caso, toda vez que o componente
+        re-renderizar, o<code>handleFunction</code> seria recriado, e o{" "}
+        <code>useEffect</code> seria disparado, por que ele não conseguiria
+        identificar que a função é a mesma. Por conta que a referência da função
+        mudou.
+      </p>
+      <p>
+        E o mesmo vale pro <code>useMemo</code>, se você tiver colocando objetos
+        ou arrays como dependências de um <code>useEffect</code>, por exemplo, e
+        toda vez que o componente re-renderizar, ele vai recriar o objeto e o{" "}
+        <code>useEffect</code> vai ser disparado, por que ele não vai conseguir
+        identificar que o objeto é o mesmo.
+      </p>
+      <p>
+        Mas isso foi apenas pra mostrar que o <code>useCallback</code> e o{" "}
+        <code>useMemo</code> não server apenas pra serem utilizado em conjunto
+        com o <code>React.memo</code>, eles tem outras utilidades também.
+      </p>
+
+      {/* ------------ */}
       <h2>Considerações finais</h2>
       <p>
-        Na maioria das vezes, um simples <code>useState</code> é o suficiente
-        pra resolver os problemas simples do dia a dia, se souber trabalhar bem
-        com ele, ele é tão performático quanto qualquer outro gerenciador de
-        estados.
+        Claro que os exemplos que eu dei aqui são bem simples e não refletem
+        necessariamente a realidade de todas as aplicações, mas a ideia é
+        mostrar como o <code>React.memo</code>, <code>useMemo</code> e o{" "}
+        <code>useCallback</code> podem ser úteis em situações do dia a dia.
       </p>
       <p>
-        Porém usar <code>React.memo</code> demais não é muito legal, por que ele
-        também tem um custo de performance, então é sempre bom usar com
-        moderação.
+        Muitas vezes acabam usando o <code>useMemo</code> e o{" "}
+        <code>useCallback</code> sem realmente entender o que está acontecendo,
+        e a longo prazo isso pode acabar se tornando um problema. Por mais que o
+        custo seja pequeno, o <code>useMemo</code> e o <code>useCallback</code>{" "}
+        tem um custo de performance, afinal, eles estão fazendo um trabalho
+        extra por trás dos panos.
       </p>
       <p>
-        Do mesmo jeito também que não é legal usar um Redux/Zustand/etc.. pra
-        qualquer estado simples da nossa aplicação, a gente estaria adicionando
-        uma complexidade desnecessária.
+        Então é sempre bom entender como eles funcionam de verdade pra saber
+        quando realmente é necessário usá-los.
+      </p>
+      <p>Mas também não adianta fazer um terror em cima disso...</p>
+      <p>
+        Na minha humilde opinião, na maioria das vezes,{" "}
+        <strong>em aplicações pequenas</strong>, o uso de
+        <code>useMemo</code> e <code>useCallback</code> em excesso não vai
+        causar um impacto tão grande na performance... Teria que ser um uso
+        muito grande pra isso começar realmente a ficar perceptível.
       </p>
       <p>
-        Mas que custo é esse? falar é fácil, então vamos fazer um teste de
-        stress e ver na prática!
+        É mais fácil um problema de performance ser causado por conta da
+        ausencia deles do que pelo excesso deles. Mas use com moderação! 😂
       </p>
-      <h2>Componentes pequenos</h2>
-      <StressGroup countOfChildren={20} />
 
-      <h2>Componentes gigantes</h2>
-      <StressGroup countOfChildren={10000} />
-
-      <p>
-        Em resumo, a melhor abordagem vai depender do seu caso de uso, se você
-        tem um estado simples, use um <code>useState</code>, se você tem um
-        estado mais complexo, use um gerenciador de estados mais robusto. Se
-        você tem um estado interno e quer usar um <code>useState</code> de uma
-        forma mais limpa, use um <code>Context</code>.
-      </p>
-      <p>
-        Na maioria das vezes o <code>useState</code> é o suficiente, se você
-        notar que seu código está começando a ficar muito complexo e confuso, aí
-        sim é hora de pensar em usar um gerenciador de estados mais robusto.
-      </p>
-      <p>
-        Mas tome cuidado com re-renderizações desnecessárias antes que vire uma
-        bola de neve e você não consiga mais controlar.
-      </p>
       <p>
         Fique a vontade pra instalar o{" "}
-        <a href="https://github.com/lucasca2/state-poc">repositório</a> e fazer mais testes por
-        conta própria!
+        <a href="https://github.com/lucasca2/state-poc">repositório</a> e fazer
+        mais testes por conta própria!
       </p>
+      <div className={styles.alert}>
+        <span>
+          Um detalhe importante que vale ser mencionado é que o React está
+          trabalhando em um{" "}
+          <a href="https://react.dev/learn/react-compiler" target="_blank">
+            compilador
+          </a>{" "}
+          muito mais robusto, que será capaz de fazer muitas dessas memorizações
+          automáticamente sem precisar ficar passando <code>React.memo</code>,
+          etc... O novo{" "}
+          <a href="https://react.dev/learn/react-compiler" target="_blank">
+            compilador
+          </a>{" "}
+          até então está em beta, mas já da pra ser testado por quem quiser.
+          <br />
+          Mais informações:{" "}
+          <a href="https://react.dev/learn/react-compiler" target="_blank">
+            React Compiler
+          </a>
+        </span>
+      </div>
       <Footer />
     </div>
   );

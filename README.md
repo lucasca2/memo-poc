@@ -1,27 +1,24 @@
-# State Management POC
+# Memo POC
 
-Esse projeto basicamente compara como diferentes abordagens de gerenciamento de estado no React impactam as re-renderizações dos componentes. O objetivo é ajudar desenvolvedores a entender como useState, Context API e Zustand se comportam em termos de performance e quando é mais apropriado usar cada um.
+Esse projeto basicamente ajuda a entender como a memorização do React com `useMemo`, `useCallback` e `React.memo` podem ajudar a deixar uma aplicação React mais performática.
 
 ### 🚀 Propósito
 
 Este repositório foi criado para:
-	•	Demonstrar como o gerenciamento de estado no React afeta as re-renderizações;
-	•	Comparar useState, Context API e Zustand;
-	•	Servir como um guia prático para ajudar desenvolvedores a decidir qual abordagem escolher para diferentes casos de uso;
+
+- Demonstrar um pouco de como a renderização do React funciona;
+- Comparar a performance usando memorização e não usando;
+- Servir como um guia prático para ajudar desenvolvedores a decidir quando e como usar a memorização do React;
 
 ---------
 
 ### 📁 Estrutura do Projeto
 
-O repositório contém quatro exemplos, cada um focado em uma abordagem específica de gerenciamento de estado:
-1.	`useState`
-Mostra o comportamento básico do useState e como ele lida com o estado local;
-2.	`useState & React.memo`
-Mesma abordagem anterior mas com um plus de como otimizar o uso do `useState`;
-3.	`createContext`
-Demonstra como a Context API gerencia o estado global e como isso afeta as re-renderizações dos componentes filhos;
-4.	`zustand`
-Explora o comportamento do Zustand, destacando sua granularidade e eficiência na notificação de mudanças;
+O repositório contém exemplos práticos utilizando três melhorias de performance:
+
+1.	`useMemo`: Memoriza a referência de uma variável;
+2.	`useCallback`: Memoriza a referência de uma função;
+3.	`React.memo`: Faz com que o componente só seja re-renderizado após uma comparação de suas propriedades;
 
 ---------
 
@@ -30,8 +27,8 @@ Explora o comportamento do Zustand, destacando sua granularidade e eficiência n
 Siga os passos abaixo para rodar o projeto localmente:
 1.	Clone o repositório:
 ```bash
-git clone https://github.com/lucasca2/state-poc.git
-cd state-poc
+git clone https://github.com/lucasca2/memo-poc.git
+cd memo-poc
 ```
 	
 2.	Instale as dependências:
@@ -50,10 +47,11 @@ npm run dev
 
 ### 📚 Recursos Adicionais
 
-Links úteis sobre gerenciamento de estado no React:
-- [Documentação oficial do React - State e Lifecycle](https://react.dev/learn/state-a-component-s-memory)
-- [Documentação oficial da Context API](https://react.dev/learn/passing-data-deeply-with-context)
-- [Documentação do Zustand](https://zustand-demo.pmnd.rs/docs/getting-started)
+Links úteis sobre memorização no React:
+- [Documentação oficial do React - Memo](https://react.dev/reference/react/memo)
+- [Documentação oficial do React - useMemo](https://react.dev/reference/react/useMemo)
+- [Documentação oficial do React - useCallback](https://react.dev/reference/react/useCallback)
+- [Novo compilador React.js (Beta)](https://react.dev/learn/react-compiler)
 
 ---------
 

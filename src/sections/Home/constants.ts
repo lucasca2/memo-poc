@@ -1,104 +1,119 @@
-export const statePOC = `export const App = () => {
-    const [switcherValue, setSwitcherValue] = useState(false);
-    const [title] = useState("State");
-    
-  
-    const handleToggle = useCallback(() => {
-      setSwitcherValue(prev => !prev);
-    }, []);
-  
-    return (
-      <div>
-        <Title title={title} />
-        <Container onToggle={handleToggle} enabled={switcherValue} />
-      </div>
-    );
-  };`;
-
-export const statePOCTitleWithMemo = `export const Title = React.memo(({ title }: TitleProps) => {
-    return (
-        <h1>{title}</h1>
-    );
-  });
-  
-  Title.displayName = "Title";`
-  
-export  const contextPOC = `export const App = () => {
-    return (
-      <SwitcherProvider>
-        <div>
-          <Title />
-          <Container />
-        </div>
-      </SwitcherProvider>
-    );
-};`;
-
-export  const contextPOCProvider = `const SwitcherProvider = ({ children }: SwitcherProviderProps) => {
+export const stateWithoutMemo = `export const App = () => {
   const [switcherValue, setSwitcherValue] = useState(false);
-  const [title] = useState("Context");
 
-  const handleToggle = () => {
-    setSwitcherValue(!switcherValue);
-  };
+  const handleToggle = () => setSwitcherValue((prev) => !prev);
 
-  return (
-    <SwitcherContext.Provider value={{ switcherValue, toggle: handleToggle, title }}>
-      {children}
-    </SwitcherContext.Provider>
-  );
-};
-
-const useSwitcher = () => {
-    const context = useContext(SwitcherContext);
-    
-    return context;
-};`;
-
-export  const contextPOCTitle = `export const Title = () => {
-  const { title } = useSwitcher();
-
-  return (
-    <h1>{title}</h1>
-  );
-};`;
-
-export  const contextPOCSwitcher = `export const Container = () => {
-  const { switcherValue, toggle } = useSwitcher();
-  
-  return (
-    <Switch onToggle={toggle} enabled={switcherValue} />
-  );
-};`;
-
-export const zustandPOCStore = `export const useSwitcherStore = create<SwitcherStore>((set) => ({
-  title: "Zustand",
-  switcherValue: false,
-  toggle: () => set((state) => ({ switcherValue: !state.switcherValue })),
-}))`
-
-export const zustandPOC = `export const App = () => {
   return (
     <div>
-      <Title />
-      <Container />
+      <Title>Without Memo</Title>
+      <SwitcherContainer onToggle={handleToggle} enabled={switcherValue} />
+    </div>
+  );
+}`;
+
+export const stateWithMemoizedTitle = `export const App = () => {
+  const [switcherValue, setSwitcherValue] = useState(false);
+
+  const handleToggle = () => setSwitcherValue((prev) => !prev);
+
+  return (
+    <div>
+      <Title>With Memo</Title>
+      <SwitcherContainer onToggle={handleToggle} enabled={switcherValue} />
     </div>
   );
 }`
 
-export  const zustandPOCTitle = `export const Title = () => {
-  const title = useSwitcherStore((state) => state.title);
+
+export const stateWithMemoizedTitleTitle = `export const Title = React.memo(({ children }: TitleProps) => {
+  return (
+      <h1>{children}</h1>
+  );
+});
+
+Title.displayName = "Title";`
+  
+
+
+export  const stateWithTwoSwitchers = `export const App = () => {
+  const [switcherValue, setSwitcherValue] = useState(false);
+  const [anotherSwitcherValue, setAnotherSwitcherValue] = useState(false);
+
+  const handleToggleSwitcherValue = () => setSwitcherValue((prev) => !prev);
+  
+  const handleToggleAnotherSwitcherValue = () => setAnotherSwitcherValue((prev) => !prev);
 
   return (
-    <h1>{title}</h1>
+    <div>
+      <Title>Without Memo</Title>
+      <SwitcherContainer onToggle={handleToggleSwitcherValue} enabled={switcherValue} />
+      <SwitcherContainer onToggle={handleToggleAnotherSwitcherValue} enabled={anotherSwitcherValue} />
+    </div>
+  );
+}`;
+
+export  const stateWithTwoSwitchersWithMemo = `export const App = () => {
+  const [switcherValue, setSwitcherValue] = useState(false);
+  const [anotherSwitcherValue, setAnotherSwitcherValue] = useState(false);
+
+  const handleToggleSwitcherValue = useCallback(() => setSwitcherValue((prev) => !prev), []);
+  
+  const handleToggleAnotherSwitcherValue = useCallback(() => setAnotherSwitcherValue((prev) => !prev), []);
+
+  return (
+    <div>
+      <Title>Without Memo</Title>
+      <SwitcherContainer onToggle={handleToggleSwitcherValue} enabled={switcherValue} />
+      <SwitcherContainer onToggle={handleToggleAnotherSwitcherValue} enabled={anotherSwitcherValue} />
+    </div>
   );
 };`;
 
-export  const zustandPOCSwitcher = `export const Container = () => {
-  const toggle = useSwitcherStore(state => state.toggle);
-  const switcherValue = useSwitcherStore(state => state.switcherValue);
+
+export const stateWithObject = `export const App = () => {
+  const [switcherValue, setSwitcherValue] = useState(false);
+  const [anotherSwitcherValue, setAnotherSwitcherValue] = useState(false);
+
+  const handleToggleSwitcherValue = useCallback(() => setSwitcherValue((prev) => !prev), []);
+  
+  const handleToggleAnotherSwitcherValue = useCallback(() => setAnotherSwitcherValue((prev) => !prev), []);
+
+  const user = {
+    name: "John",
+    age: 25,
+  }
 
   return (
-    <Switch onToggle={toggle} enabled={switcherValue} />
+    <div>
+      <Title>Without Memo</Title>
+      <User user={user} />
+      <SwitcherContainer onToggle={handleToggleSwitcherValue} enabled={switcherValue} />
+      <SwitcherContainer onToggle={handleToggleAnotherSwitcherValue} enabled={anotherSwitcherValue} />
+    </div>
   );
-};`;
+};
+`
+
+export const stateWithObjectWithMemo = `export const App = () => {
+  const [switcherValue, setSwitcherValue] = useState(false);
+  const [anotherSwitcherValue, setAnotherSwitcherValue] = useState(false);
+
+  const handleToggleSwitcherValue = useCallback(() => setSwitcherValue((prev) => !prev), []);
+  
+  const handleToggleAnotherSwitcherValue = useCallback(() => setAnotherSwitcherValue((prev) => !prev), []);
+
+  const user = useMemo(() => ({
+    name: "John",
+    age: 25,
+  }), [])
+
+  return (
+    <div>
+      <Title>With Memo</Title>
+      <User user={user} />
+      <SwitcherContainer onToggle={handleToggleSwitcherValue} enabled={switcherValue} />
+      <SwitcherContainer onToggle={handleToggleAnotherSwitcherValue} enabled={anotherSwitcherValue} />
+    </div>
+  );
+};
+`

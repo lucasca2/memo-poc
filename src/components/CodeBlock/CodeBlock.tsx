@@ -8,7 +8,7 @@ type CodeBlockProps = {
 
 export const CodeBlock = ({ code }: CodeBlockProps) => {
   return (
-    <Highlight theme={themes.vsDark} code={code} language="tsx">
+    <Highlight theme={themes.vsDark} code={code.trim()} language="tsx">
       {({ style, tokens, getLineProps, getTokenProps }) => (
         <pre style={style} className={styles.code} translate="no">
           {tokens.map((line, i) => (
